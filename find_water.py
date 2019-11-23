@@ -1,3 +1,11 @@
+"""
+find_water.py
+Lydia Chan, Russell Tran
+22 November 2019
+
+Run this script to perform the training.
+"""
+
 # ========================
 # Import global modules
 # ========================
