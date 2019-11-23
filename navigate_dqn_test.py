@@ -1,15 +1,3 @@
-NUM_GAMES_TO_PLAY = 35
-
-
-import os
-import pandas as pd
-from datetime import datetime
-
-
-MAGIC_XML_LOCATION = os.path.join(os.path.dirname(os.path.abspath(__file__)), "russell_water.xml")
-print("MAGIC_XML_LOCATION = {}".format(MAGIC_XML_LOCATION))
-
-
 import gym
 import itertools
 import minerl
@@ -27,110 +15,10 @@ from baselines.deepq.replay_buffer import ReplayBuffer
 from baselines.common.schedules import LinearSchedule
 
 import logging
+
 import coloredlogs
 coloredlogs.install(logging.INFO)
-
 print("WE ARE HERE PLEASE")
-
-
-
-# ===========
-# BIG DUMP HERE
-print("Bout to import gym register and all its bullshit friends")
-print("All this useless shit came from minerl/env/__init__.py")
-
-
-import os
-
-# import gym
-# Perform the registration.
-from gym.envs.registration import register
-from collections import OrderedDict
-from minerl.env import spaces
-from minerl.env.core import MineRLEnv, missions_dir
-
-import numpy as np
-
-
-def make_navigate_text(top, dense):
-    navigate_text = """
-.. image:: ../assets/navigate{}1.mp4.gif
-    :scale: 100 %
-    :alt: 
-
-.. image:: ../assets/navigate{}2.mp4.gif
-    :scale: 100 %
-    :alt: 
-
-.. image:: ../assets/navigate{}3.mp4.gif
-    :scale: 100 %
-    :alt: 
-
-.. image:: ../assets/navigate{}4.mp4.gif
-    :scale: 100 %
-    :alt: 
-
-In this task, the agent must move to a goal location denoted by a diamond block. This represents a basic primitive used in many tasks throughout Minecraft. In addition to standard observations, the agent has access to a “compass” observation, which points near the goal location, 64 meters from the start location. The goal has a small random horizontal offset from the compass location and may be slightly below surface level. On the goal location is a unique block, so the agent must find the final goal by searching based on local visual features.
-
-The agent is given a sparse reward (+100 upon reaching the goal, at which point the episode terminates). """
-    if dense:
-        navigate_text += "**This variant of the environment is dense reward-shaped where the agent is given a reward every tick for how much closer (or negative reward for farther) the agent gets to the target.**\n"
-    else: 
-        navigate_text += "**This variant of the environment is sparse.**\n"
-
-    if top is "normal":
-        navigate_text += "\nIn this environment, the agent spawns on a random survival map.\n"
-        navigate_text = navigate_text.format(*["" for _ in range(4)])
-    else:
-        navigate_text += "\nIn this environment, the agent spawns in an extreme hills biome.\n"
-        navigate_text = navigate_text.format(*["extreme" for _ in range(4)])
-    return navigate_text
-
-navigate_action_space = spaces.Dict({
-    "forward": spaces.Discrete(2),
-    "back": spaces.Discrete(2),
-    "left": spaces.Discrete(2),
-    "right": spaces.Discrete(2),
-    "jump": spaces.Discrete(2),
-    "sneak": spaces.Discrete(2),
-    "sprint": spaces.Discrete(2),
-    "attack": spaces.Discrete(2),
-    "camera": spaces.Box(low=-180, high=180, shape=(2,), dtype=np.float32),
-    "place": spaces.Enum('none', 'dirt')})
-
-navigate_observation_space = spaces.Dict({
-    'pov': spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8),
-    'inventory': spaces.Dict(spaces={
-        'dirt': spaces.Box(low=0, high=2304, shape=(), dtype=np.int)
-    }),
-    'compassAngle': spaces.Box(low=-180.0, high=180.0, shape=(), dtype=np.float32)
-})
-
-print("Wipe my ass!")
-register(
-    id='russell-water-v0',
-    entry_point='minerl.env:MineRLEnv',
-    kwargs={
-        'xml': MAGIC_XML_LOCATION,
-        'observation_space': navigate_observation_space,
-        'action_space': navigate_action_space,
-        'docstr': make_navigate_text('normal', False)
-    },
-    max_episode_steps=6000,
-)
-
-print("Ass was wiped!")
-
-# ==============
-# BOOM END OF RUSSELL CONSTUCTION
-
-
-# =============
-
-
-
-
-
 
 model = deepq.models.cnn_to_mlp(
     convs=[(32, 8, 4), (64, 4, 2), (64, 3, 1)],
@@ -178,7 +66,7 @@ if __name__ == '__main__':
     verbose = True
     with U.make_session(8):
         # Create the environment
-        env = gym.make("russell-water-v0")
+        env = gym.make("MineRLNavigateDense-v0")
         spaces = env.observation_space.spaces['pov']
         shape = list(spaces.shape)
         shape[-1] += 1
@@ -215,19 +103,10 @@ if __name__ == '__main__':
         # obs = test_obs
         obs = observation_wrapper(obs)
         
-
-        game_stats = []
-        games_completed = 0
         for t in itertools.count():
 
-            if games_completed > NUM_GAMES_TO_PLAY:
-                print("Hit the limit of games completed. Breaking")
-                break
-
-            
-
             if verbose:
-                if t % 1000 == 0:
+                if t % 1000:
                     print("t = {}".format(t))
 
             # Take action and update exploration to the newest value
@@ -263,29 +142,8 @@ if __name__ == '__main__':
                     update_target()
 
             if done and len(episode_rewards) % 1 == 0:
-                print("Game #{} was just completed".format(games_completed))
                 logger.record_tabular("steps", t)
                 logger.record_tabular("episodes", len(episode_rewards))
                 logger.record_tabular("mean episode reward", round(np.mean(episode_rewards[-101:-1]), 1))
                 logger.record_tabular("% time spent exploring", int(100 * exploration.value(t)))
                 logger.dump_tabular()
-                games_completed += 1
-                game_stats.append({
-                    "steps" : t,
-                    "episodes" : len(episode_rewards),
-                    "mean episode reward" : round(np.mean(episode_rewards[-101:-1]), 1),
-                    "% time spent exploring" : int(100 * exploration.value(t))
-
-                    })
-
-        print("Saving to dataframe")
-        df = pd.DataFrame(game_stats)
-
-        now = datetime.now() # current date and time
-
-        date_time_string = now.strftime("%m-%d-%Y-%H%M%S")
-        csv_name = "russell_water_v0_run_{}.csv".format(date_time_string)
-
-        print("Saving to csv named {}".format(csv_name))
-
-        df.to_csv(csv_name)
