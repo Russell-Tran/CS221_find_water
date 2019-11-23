@@ -1,7 +1,11 @@
-# =========================
-""" Do the work necessary to register our
-custom environment into the gym.
-This code came from minerl/env/__init__.py
+""" 
+22 November 2019
+
+A local module that does the work necessary to register our
+custom environment into the gym. All you gotta do is call
+register_custom_environment.register(environment_id, xml_path).
+
+This code originally came from minerl/env/__init__.py
 at https://github.com/minerllabs/minerl
 """
 # Perform the registration.
