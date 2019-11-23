@@ -1,144 +1,51 @@
-NUM_GAMES_TO_PLAY = 35
-
-
+# ========================
+# Import global modules
+# ========================
 import os
 import pandas as pd
 from datetime import datetime
-
-
-MAGIC_XML_LOCATION = os.path.join(os.path.dirname(os.path.abspath(__file__)), "russell_water.xml")
-print("MAGIC_XML_LOCATION = {}".format(MAGIC_XML_LOCATION))
-
-
 import gym
 import itertools
 import minerl
 import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.layers as layers
-
 import baselines.common.tf_util as U
-#import baselines.deepq.utils as U shit
-import baselines.deepq.utils as shit
-
+import baselines.deepq.utils as shit # Changed the import here to fix a bug
 from baselines import logger
 from baselines import deepq
 from baselines.deepq.replay_buffer import ReplayBuffer
 from baselines.common.schedules import LinearSchedule
-
 import logging
 import coloredlogs
 coloredlogs.install(logging.INFO)
+# =========================
+# Import local modules
+# =========================
+import register_custom_environment
+# =========================
+# =========================
+# CONFIG CONSTANTS
+NUM_GAMES_TO_PLAY = 35
+MINECRAFT_MISSION_XML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "russell_water.xml")
+ENVIRONMENT_ID = 'russell-water-v0'
+# =========================
+# =========================
+print("MINECRAFT_MISSION_XML_PATH = {}".format(MINECRAFT_MISSION_XML_PATH))
+print("I dunno why but things take a while at this point to launch Minecraft...")
+# =========================
+# Register our custom environment
+# This step is necessary to call upon gym.make() later
+register_custom_environment.register(environment_id=ENVIRONMENT_ID, xml_path=MINECRAFT_MISSION_XML_PATH)
 
-print("WE ARE HERE PLEASE")
-
-
-
-# ===========
-# BIG DUMP HERE
-print("Bout to import gym register and all its bullshit friends")
-print("All this useless shit came from minerl/env/__init__.py")
-
-
-import os
-
-# import gym
-# Perform the registration.
-from gym.envs.registration import register
-from collections import OrderedDict
-from minerl.env import spaces
-from minerl.env.core import MineRLEnv, missions_dir
-
-import numpy as np
-
-
-def make_navigate_text(top, dense):
-    navigate_text = """
-.. image:: ../assets/navigate{}1.mp4.gif
-    :scale: 100 %
-    :alt: 
-
-.. image:: ../assets/navigate{}2.mp4.gif
-    :scale: 100 %
-    :alt: 
-
-.. image:: ../assets/navigate{}3.mp4.gif
-    :scale: 100 %
-    :alt: 
-
-.. image:: ../assets/navigate{}4.mp4.gif
-    :scale: 100 %
-    :alt: 
-
-In this task, the agent must move to a goal location denoted by a diamond block. This represents a basic primitive used in many tasks throughout Minecraft. In addition to standard observations, the agent has access to a “compass” observation, which points near the goal location, 64 meters from the start location. The goal has a small random horizontal offset from the compass location and may be slightly below surface level. On the goal location is a unique block, so the agent must find the final goal by searching based on local visual features.
-
-The agent is given a sparse reward (+100 upon reaching the goal, at which point the episode terminates). """
-    if dense:
-        navigate_text += "**This variant of the environment is dense reward-shaped where the agent is given a reward every tick for how much closer (or negative reward for farther) the agent gets to the target.**\n"
-    else: 
-        navigate_text += "**This variant of the environment is sparse.**\n"
-
-    if top is "normal":
-        navigate_text += "\nIn this environment, the agent spawns on a random survival map.\n"
-        navigate_text = navigate_text.format(*["" for _ in range(4)])
-    else:
-        navigate_text += "\nIn this environment, the agent spawns in an extreme hills biome.\n"
-        navigate_text = navigate_text.format(*["extreme" for _ in range(4)])
-    return navigate_text
-
-navigate_action_space = spaces.Dict({
-    "forward": spaces.Discrete(2),
-    "back": spaces.Discrete(2),
-    "left": spaces.Discrete(2),
-    "right": spaces.Discrete(2),
-    "jump": spaces.Discrete(2),
-    "sneak": spaces.Discrete(2),
-    "sprint": spaces.Discrete(2),
-    "attack": spaces.Discrete(2),
-    "camera": spaces.Box(low=-180, high=180, shape=(2,), dtype=np.float32),
-    "place": spaces.Enum('none', 'dirt')})
-
-navigate_observation_space = spaces.Dict({
-    'pov': spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8),
-    'inventory': spaces.Dict(spaces={
-        'dirt': spaces.Box(low=0, high=2304, shape=(), dtype=np.int)
-    }),
-    'compassAngle': spaces.Box(low=-180.0, high=180.0, shape=(), dtype=np.float32)
-})
-
-print("Wipe my ass!")
-register(
-    id='russell-water-v0',
-    entry_point='minerl.env:MineRLEnv',
-    kwargs={
-        'xml': MAGIC_XML_LOCATION,
-        'observation_space': navigate_observation_space,
-        'action_space': navigate_action_space,
-        'docstr': make_navigate_text('normal', False)
-    },
-    max_episode_steps=6000,
-)
-
-print("Ass was wiped!")
-
-# ==============
-# BOOM END OF RUSSELL CONSTUCTION
-
-
-# =============
-
-
-
-
-
-
+# TODO: Figure out what this means
 model = deepq.models.cnn_to_mlp(
     convs=[(32, 8, 4), (64, 4, 2), (64, 3, 1)],
     hiddens=[256],
     dueling=True
 )
 
-
+# TODO: Figure out what this means
 def action_wrapper(action_int):
     act = {
         "forward": 1,
@@ -159,9 +66,9 @@ def action_wrapper(action_int):
     elif action_int  == 2:
         act['camera'] = [0, -10]
 
-
     return act.copy()
 
+# TODO: Figure out what this means
 def observation_wrapper(obs):
     pov = obs['pov'].astype(np.float32)/255.0- 0.5
     compass = obs['compassAngle']
@@ -171,14 +78,12 @@ def observation_wrapper(obs):
     
     return np.concatenate([pov, compass_channel], axis=-1)
 
-
-
+# TODO: Figure out what this means
 if __name__ == '__main__':
-    print("HELLO BITCHES WE ARE ALIVE")
     verbose = True
     with U.make_session(8):
         # Create the environment
-        env = gym.make("russell-water-v0")
+        env = gym.make(ENVIRONMENT_ID)
         spaces = env.observation_space.spaces['pov']
         shape = list(spaces.shape)
         shape[-1] += 1
@@ -278,14 +183,14 @@ if __name__ == '__main__':
 
                     })
 
+
+        # Russell wrote this part
+        # Basically it just saves the game stats to a csv
         print("Saving to dataframe")
         df = pd.DataFrame(game_stats)
-
         now = datetime.now() # current date and time
-
         date_time_string = now.strftime("%m-%d-%Y-%H%M%S")
         csv_name = "russell_water_v0_run_{}.csv".format(date_time_string)
-
         print("Saving to csv named {}".format(csv_name))
-
         df.to_csv(csv_name)
+        # End of saving to CSV

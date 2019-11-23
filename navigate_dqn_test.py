@@ -1,3 +1,8 @@
+"""
+navigate_dqn_test.py
+This is the example given by minerl of DQN.
+"""
+
 import gym
 import itertools
 import minerl
