@@ -1,4 +1,6 @@
 # CS221_find_water
+####Below are the necessary dependencies for macOS and Windows:
+
 tensorflow==1.14
 
 minerl==0.2.9
