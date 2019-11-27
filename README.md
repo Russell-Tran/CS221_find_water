@@ -1,5 +1,5 @@
 # CS221_find_water
-####Below are the necessary dependencies for macOS and Windows:
+#### Below are the necessary dependencies for macOS and Windows:
 
 tensorflow==1.14
 
