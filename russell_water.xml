@@ -22,7 +22,7 @@
             <!--<FlatWorldGenerator generatorString="3;7,220*1,5*3,2;3;,biome_1"/>-->
             
             <!-- This came from 229 malmo-->
-            <FlatWorldGenerator generatorString="3;7,220*1,5*3,2;3;dungeon" />
+            <FlatWorldGenerator generatorString="3;7,220*1,5*3,2;2;dungeon" />
             <DrawingDecorator>  
                 <DrawCuboid x1="-28" y1="206" z1="-30" x2="1" y2="240" z2="1" type="stone"/>
 
