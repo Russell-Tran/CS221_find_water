@@ -1,9 +1,9 @@
 """
-FIND_WATER_v1
+find_water.py
 Lydia Chan, Russell Tran
 22 November 2019
 
-THIS IS THE SCRIPT THAT IS USED FOR DQN.
+Run this script to perform the training.
 """
 
 # ========================
@@ -31,12 +31,13 @@ coloredlogs.install(logging.INFO)
 # Import local modules
 # =========================
 import register_custom_environment
+import basic_q_learning
 import util
 
 # =========================
 # Define CONFIG CONSTANTS
 # =========================
-ALGORITHM_NAME = "DQN"
+ALGORITHM_NAME = "q_learning"
 ENVIRONMENT_NAME = "boxed_water_medium"
 NUM_GAMES_TO_PLAY = 200
 MINECRAFT_MISSION_XML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "{}.xml".format(ENVIRONMENT_NAME))
@@ -57,17 +58,34 @@ print('=' * 60)
 # =========================
 register_custom_environment.register(environment_id=ENVIRONMENT_ID, xml_path=MINECRAFT_MISSION_XML_PATH)
 
-# Create a q_function ("model") for a DQN algorithm
-model = deepq.models.cnn_to_mlp(
-    # list of convolutional layers in form of
-    # (num_outputs, kernel_size, stride)
-    convs=[(32, 8, 4), (64, 4, 2), (64, 3, 1)],
-    # list of sizes of hidden layers
-    hiddens=[256],
-    # set whether we want this to be a dueling DQN
-    # see https://github.com/openai/baselines/pull/946/commits/933265b01fb6e17a65a052b62aa1f9d592a67e6f
-    dueling=True
-)
+
+# Set up the Q-learning algorithm
+
+def totuple(a):
+    try:
+        return tuple(totuple(i) for i in a)
+    except TypeError:
+        return a
+
+def action_function(obs):
+    # These correspond to the enumerated actions from the function action_wrapper() below
+    return [0, 1, 2, 3]
+
+
+# Return a single-element list containing a binary (indicator) feature
+# for the existence of the (state, action) pair.  Provides no generalization.
+def identityFeatureExtractor(state, action):
+    featureKey = (state, action)
+    featureValue = 1
+    return [(featureKey, featureValue)]
+
+
+q_learning = basic_q_learning.QLearningAlgorithm(
+    actions=action_function, 
+    discount=1, 
+    featureExtractor=identityFeatureExtractor, 
+    explorationProb=0.3
+    )
 
 
 def action_wrapper(action_int):
@@ -99,16 +117,11 @@ def observation_wrapper(obs):
     """ Reformat the observations in a convenient way.
     Converts the pixel values from the usual [0, 255] value range
     to a range of [-0.5, +0.5].
-    Also incorporates the compass angle into all of data points for this given observation.
+    DOES NOT incorporate the compass angle at all.
     """
     # Convert pixel values
     pov = obs['pov'].astype(np.float32)/255.0 - 0.5
-    # Get compass angle
-    compass = obs['compassAngle']
-    compass_channel = np.ones(shape=list(pov.shape[:-1]) + [1], dtype=np.float32)*compass
-    compass_channel /= 180.0
-    # Incorporate 
-    return np.concatenate([pov, compass_channel], axis=-1)
+    return pov 
 
 if __name__ == '__main__':
     # Set up a session with at most 8 CPUs used
@@ -119,9 +132,6 @@ if __name__ == '__main__':
         # Create the environment
         env = gym.make(ENVIRONMENT_ID)
 
-        # somehow, trying to render it destroys this
-        # env.render()
-
         # Get dimensions of POV observation space
         # where env.observation_space.spaces =
         # OrderedDict([('compassAngle', Box()), ('inventory', Dict(dirt:Box())), ('pov', Box(64, 64, 3))])
@@ -131,38 +141,6 @@ if __name__ == '__main__':
         shape = list(spaces.shape)
         shape[-1] += 1 # effectively change shape (64, 64, 3) --> (64, 64, 4)
 
-        # Create all the functions necessary to train the model
-        # https://github.com/openai/baselines/blob/master/baselines/deepq/build_graph.py
-        # Descriptions for the following functions:
-        # act : select an action given observation
-        # train : optimize the error in Bellman's equation
-        # update_target : copy the parameters from the optimized
-        # Q function to the target Q function
-        # debug : a dictionary of functions that print debug data
-        # such as q_values
-        act, train, update_target, debug = deepq.build_train(
-            # make_obs_ph is a function that takes a name and
-            # creates a placeholder of input with that name
-            # and BatchInput creates a placeholder for a batch of tensors of a given shape and dtype
-            make_obs_ph=lambda name: deepq.utils.BatchInput(shape
-                , name=name),
-            q_func=model,
-            # We have a total of 4 different actions, and those actions are enumerated 0 through 3, inclusive
-            num_actions=4,
-            # Adam is a variation of Stochastic Gradient Descent
-            optimizer=tf.train.AdamOptimizer(learning_rate=5e-4),
-        )
-
-        # Create the replay buffer
-        # with a limit of 30,000 transitions stored in the buffer
-        replay_buffer = ReplayBuffer(30000)
-        # Create the schedule for exploration starting from 1 (every action is random) down to
-        # 0.02 (98% of actions are selected according to values predicted by the model).
-        exploration = LinearSchedule(schedule_timesteps=100000, initial_p=1.0, final_p=0.02)
-
-        # Initialize the parameters and copy them to the target network.
-        U.initialize()
-        update_target()
 
         # Keep track of the rewards for each episode
         episode_rewards = [0.0]
@@ -189,33 +167,34 @@ if __name__ == '__main__':
                 if t % 1000 == 0:
                     print("t = {}".format(t))
 
-            # Take action and update exploration to the newest value
-            action = act(obs[None], update_eps=exploration.value(t))[0]
+            # Take action 
+            # Since the pixel displays represent our states
+            # then our states are synonymous with observations ("obs" and "new_obs")
+            action = q_learning.getAction(totuple(obs))
             new_obs, rew, done, _ = env.step(action_wrapper(action))
             new_obs = observation_wrapper(new_obs)
 
-            # Store transition in the replay buffer.
-            replay_buffer.add(obs, action, rew, new_obs, float(done))
-            obs = new_obs
-
+            # Update the rewards for this episode
+            reward = rew
             episode_rewards[-1] += rew
+
+            # Incorporate the feedback depending on whether we are done with this episode
             if done:
+                # Mark the new state as None to indicate terminal state
+                q_learning.incorporateFeedback(state=totuple(obs), action=action, reward=reward, newState=None)
                 obs = env.reset()
                 obs = observation_wrapper(obs)
                 episode_rewards.append(0)
+            else:
+                # The usual incorporation of feedback for non-terminal states
+                q_learning.incorporateFeedback(state=totuple(obs), action=action, reward=reward, newState=totuple(new_obs))
+                # Update current state
+                obs = new_obs
 
             is_solved = t > 100 and np.mean(episode_rewards[-101:-1]) >= 200
             if is_solved:
                 # Show off the result
                 env.render()
-            else:
-                # Minimize the error in Bellman's equation on a batch sampled from replay buffer.
-                if t > 1000:
-                    obses_t, actions, rewards, obses_tp1, dones = replay_buffer.sample(32)
-                    train(obses_t, actions, rewards, obses_tp1, dones, np.ones_like(rewards))
-                # Update target network periodically.
-                if t % 1000 == 0:
-                    update_target()
 
             # Print game stats for this completed game
             if done and len(episode_rewards) % 1 == 0:
@@ -223,14 +202,12 @@ if __name__ == '__main__':
                 logger.record_tabular("steps", t)
                 logger.record_tabular("episodes", len(episode_rewards))
                 logger.record_tabular("mean episode reward", round(np.mean(episode_rewards[-101:-1]), 1))
-                logger.record_tabular("% time spent exploring", int(100 * exploration.value(t)))
                 logger.dump_tabular()
                 games_completed += 1
                 game_stats.append({
                     "steps" : t,
                     "episodes" : len(episode_rewards),
                     "mean episode reward" : round(np.mean(episode_rewards[-101:-1]), 1),
-                    "% time spent exploring" : int(100 * exploration.value(t)),
                     "reward_for_this_episode" : episode_rewards[-2],
                     "delta_t" : t - old_t
                     })
