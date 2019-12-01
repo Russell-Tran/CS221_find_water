@@ -16,3 +16,5 @@ mpi4py==3.0.3
 baselines==0.1.5
 
 lxml==4.4.1
+
+psutil>=5.6.2

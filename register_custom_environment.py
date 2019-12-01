@@ -70,20 +70,20 @@ def register(environment_id, xml_path):
             navigate_text = navigate_text.format(*["extreme" for _ in range(4)])
         return navigate_text
 
-    # TODO: Figure out what this represents
+    # Define the action space
     navigate_action_space = spaces.Dict({
         "forward": spaces.Discrete(2),
         "back": spaces.Discrete(2),
         "left": spaces.Discrete(2),
         "right": spaces.Discrete(2),
         "jump": spaces.Discrete(2),
-        "sneak": spaces.Discrete(2),
-        "sprint": spaces.Discrete(2),
-        "attack": spaces.Discrete(2),
+#        "sneak": spaces.Discrete(2),
+#        "sprint": spaces.Discrete(2),
+#        "attack": spaces.Discrete(2),
         "camera": spaces.Box(low=-180, high=180, shape=(2,), dtype=np.float32),
         "place": spaces.Enum('none', 'dirt')})
 
-    # TODO: Figure out what this represents
+    # Define the information that the agent receives, and navigates using
     navigate_observation_space = spaces.Dict({
         'pov': spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8),
         'inventory': spaces.Dict(spaces={

@@ -35,7 +35,7 @@ import register_custom_environment
 # =========================
 # Define CONFIG CONSTANTS
 # =========================
-NUM_GAMES_TO_PLAY = 35
+NUM_GAMES_TO_PLAY = 10
 MINECRAFT_MISSION_XML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "russell_water.xml")
 ENVIRONMENT_ID = 'russell-water-v0'
 VERBOSE = True
