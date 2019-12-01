@@ -36,8 +36,8 @@ import basic_q_learning
 # =========================
 # Define CONFIG CONSTANTS
 # =========================
-NUM_GAMES_TO_PLAY = 100
-MINECRAFT_MISSION_XML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "boxed_water.xml")
+NUM_GAMES_TO_PLAY = 200
+MINECRAFT_MISSION_XML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "boxed_water_medium.xml")
 ENVIRONMENT_ID = 'russell-water-v0'
 VERBOSE = True
 
@@ -92,14 +92,7 @@ def action_wrapper(action_int):
     can be interpreted as an action in the Minecraft environment
     """
     # Action space
-    act = {
-        "forward": 1,
-        "back": 0, 
-        "left": 0, 
-        "right": 0, 
-        "jump": 0, 
-        "camera": [0,0]
-    }
+    act = {}
 
     # Convert the enumeration
     if action_int == 0:
@@ -111,7 +104,9 @@ def action_wrapper(action_int):
     elif action_int  == 2:
         # Turn left
         act['camera'] = [0, -10]
-    # (Thus the enumeration (3) effectively means just move forward without these other things)
+    elif action_int == 3:
+        # Go forward
+        act['forward'] = 1
 
     return act.copy()
 
@@ -206,6 +201,7 @@ if __name__ == '__main__':
                     "steps" : t,
                     "episodes" : len(episode_rewards),
                     "mean episode reward" : round(np.mean(episode_rewards[-101:-1]), 1),
+                    "reward_for_this_episode" : episode_rewards[-2]
                     })
 
 
@@ -215,7 +211,7 @@ if __name__ == '__main__':
         df = pd.DataFrame(game_stats)
         now = datetime.now() # current date and time
         date_time_string = now.strftime("%m-%d-%Y-%H%M%S")
-        csv_name = "boxed_water_v0_run_{}.csv".format(date_time_string)
+        csv_name = "q_learning_boxed_water_medium_run_{}.csv".format(date_time_string)
         print("Saving to csv named {}".format(csv_name))
         df.to_csv(csv_name)
         # End of saving to CSV
