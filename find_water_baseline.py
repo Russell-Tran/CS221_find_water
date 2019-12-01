@@ -34,12 +34,13 @@ coloredlogs.install(logging.INFO)
 # Import local modules
 # =========================
 import register_custom_environment
+import util
 
 # =========================
 # Define CONFIG CONSTANTS
 # =========================
-NUM_GAMES_TO_PLAY = 100
-MINECRAFT_MISSION_XML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "boxed_water.xml")
+NUM_GAMES_TO_PLAY = 200
+MINECRAFT_MISSION_XML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "boxed_water_medium.xml")
 ENVIRONMENT_ID = 'russell-water-v0'
 VERBOSE = True
 BASELINE_STEPS_FORWARD = 50
@@ -64,6 +65,9 @@ register_custom_environment.register(environment_id=ENVIRONMENT_ID, xml_path=MIN
 
 
 def run():
+    # Keep track of data
+    datasaver = util.DataSaver()
+
     # Create the environment
     env = gym.make(ENVIRONMENT_ID)
 
@@ -138,7 +142,9 @@ def run():
                     "steps" : t,
                     "episodes" : len(episode_rewards),
                     "mean episode reward" : round(np.mean(episode_rewards[-101:-1]), 1),
+                    "reward_for_this_episode" : episode_rewards[-2]
                     })
+                datasaver.save_list_of_dicts(game_stats)
 
             return True
 
@@ -254,16 +260,6 @@ def run():
         if shouldRestartPolicyCycle:
             continue
         # === THE CYCLE IS COMPLETE ===
-
-    # Saves the game stats to a csv
-    print("Saving to dataframe")
-    df = pd.DataFrame(game_stats)
-    now = datetime.now() # current date and time
-    date_time_string = now.strftime("%m-%d-%Y-%H%M%S")
-    csv_name = "boxed_water_v0_run_{}.csv".format(date_time_string)
-    print("Saving to csv named {}".format(csv_name))
-    df.to_csv(csv_name)
-    # End of saving to CSV
 
 if __name__ == '__main__':
     # Set up a session with at most 8 CPUs used

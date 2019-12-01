@@ -32,6 +32,7 @@ coloredlogs.install(logging.INFO)
 # =========================
 import register_custom_environment
 import basic_q_learning
+import util
 
 # =========================
 # Define CONFIG CONSTANTS
@@ -123,6 +124,9 @@ def observation_wrapper(obs):
 if __name__ == '__main__':
     # Set up a session with at most 8 CPUs used
     with U.make_session(8):
+        # Keep track of data
+        datasaver = util.DataSaver()
+
         # Create the environment
         env = gym.make(ENVIRONMENT_ID)
 
@@ -203,15 +207,4 @@ if __name__ == '__main__':
                     "mean episode reward" : round(np.mean(episode_rewards[-101:-1]), 1),
                     "reward_for_this_episode" : episode_rewards[-2]
                     })
-
-
-        # Russell wrote this part
-        # Basically it just saves the game stats to a csv
-        print("Saving to dataframe")
-        df = pd.DataFrame(game_stats)
-        now = datetime.now() # current date and time
-        date_time_string = now.strftime("%m-%d-%Y-%H%M%S")
-        csv_name = "q_learning_boxed_water_medium_run_{}.csv".format(date_time_string)
-        print("Saving to csv named {}".format(csv_name))
-        df.to_csv(csv_name)
-        # End of saving to CSV
+                datasaver.save_list_of_dicts(game_stats)
