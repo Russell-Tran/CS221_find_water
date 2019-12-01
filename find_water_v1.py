@@ -85,10 +85,10 @@ def action_wrapper(action_int):
         act['jump'] = 1
     elif action_int  == 1:
         # Turn right
-        act['camera'] = [0, 10]
+        act['camera'] = [0, 30]
     elif action_int  == 2:
         # Turn left
-        act['camera'] = [0, -10]
+        act['camera'] = [0, -30]
     elif action_int == 3:
         # Go forward
         act['forward'] = 1
