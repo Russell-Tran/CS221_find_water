@@ -37,8 +37,10 @@ import util
 # =========================
 # Define CONFIG CONSTANTS
 # =========================
+ALGORITHM_NAME = "q_learning"
+ENVIRONMENT_NAME = "boxed_water_medium"
 NUM_GAMES_TO_PLAY = 200
-MINECRAFT_MISSION_XML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "boxed_water_medium.xml")
+MINECRAFT_MISSION_XML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "{}.xml".format(ENVIRONMENT_NAME))
 ENVIRONMENT_ID = 'russell-water-v0'
 VERBOSE = True
 
@@ -125,7 +127,7 @@ if __name__ == '__main__':
     # Set up a session with at most 8 CPUs used
     with U.make_session(8):
         # Keep track of data
-        datasaver = util.DataSaver()
+        datasaver = util.DataSaver(ALGORITHM_NAME, ENVIRONMENT_NAME)
 
         # Create the environment
         env = gym.make(ENVIRONMENT_ID)

@@ -39,8 +39,10 @@ import util
 # =========================
 # Define CONFIG CONSTANTS
 # =========================
+ALGORITHM_NAME = "baseline"
+ENVIRONMENT_NAME = "boxed_water_medium"
 NUM_GAMES_TO_PLAY = 200
-MINECRAFT_MISSION_XML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "boxed_water_medium.xml")
+MINECRAFT_MISSION_XML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "{}.xml".format(ENVIRONMENT_NAME))
 ENVIRONMENT_ID = 'russell-water-v0'
 VERBOSE = True
 BASELINE_STEPS_FORWARD = 50
@@ -66,7 +68,7 @@ register_custom_environment.register(environment_id=ENVIRONMENT_ID, xml_path=MIN
 
 def run():
     # Keep track of data
-    datasaver = util.DataSaver()
+    datasaver = util.DataSaver(ALGORITHM_NAME, ENVIRONMENT_NAME)
 
     # Create the environment
     env = gym.make(ENVIRONMENT_ID)
