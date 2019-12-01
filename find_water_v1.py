@@ -38,7 +38,7 @@ import util
 # =========================
 ALGORITHM_NAME = "DQN"
 ENVIRONMENT_NAME = "boxed_water_medium"
-NUM_GAMES_TO_PLAY = 200
+NUM_GAMES_TO_PLAY = 400
 MINECRAFT_MISSION_XML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "{}.xml".format(ENVIRONMENT_NAME))
 ENVIRONMENT_ID = 'russell-water-v0'
 VERBOSE = True
@@ -158,7 +158,7 @@ if __name__ == '__main__':
         replay_buffer = ReplayBuffer(30000)
         # Create the schedule for exploration starting from 1 (every action is random) down to
         # 0.02 (98% of actions are selected according to values predicted by the model).
-        exploration = LinearSchedule(schedule_timesteps=100000, initial_p=1.0, final_p=0.02)
+        exploration = LinearSchedule(schedule_timesteps=450000, initial_p=1.0, final_p=0.02)
 
         # Initialize the parameters and copy them to the target network.
         U.initialize()
