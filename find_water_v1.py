@@ -180,6 +180,7 @@ if __name__ == '__main__':
         """
         game_stats = []
         games_completed = 0
+        old_t = 0
         for t in itertools.count():
             if games_completed >= NUM_GAMES_TO_PLAY:
                 print("Hit the limit of games completed. Breaking")
@@ -230,6 +231,8 @@ if __name__ == '__main__':
                     "episodes" : len(episode_rewards),
                     "mean episode reward" : round(np.mean(episode_rewards[-101:-1]), 1),
                     "% time spent exploring" : int(100 * exploration.value(t)),
-                    "reward_for_this_episode" : episode_rewards[-2]
+                    "reward_for_this_episode" : episode_rewards[-2],
+                    "delta_t" : t - old_t
                     })
+                old_t = t
                 datasaver.save_list_of_dicts(game_stats)

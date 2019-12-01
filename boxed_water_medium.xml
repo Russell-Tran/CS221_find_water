@@ -60,8 +60,8 @@
                 <Block type="flowing_water"/>
             </AgentQuitFromTouchingBlockType>
             <RewardForTouchingBlockType>
-                <Block reward="20000.0" type="water" behaviour="onceOnly"/>
-                <Block reward="20000.0" type="flowing_water" behaviour="onceOnly"/>
+                <Block reward="3000.0" type="water" behaviour="onceOnly"/>
+                <Block reward="3000.0" type="flowing_water" behaviour="onceOnly"/>
                 <!--<Block reward="-1" type="stone" behaviour="constant"/>-->
             </RewardForTouchingBlockType>
             <RewardForSendingCommand reward="-1" />

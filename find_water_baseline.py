@@ -91,6 +91,7 @@ def run():
 
     # The total number of steps taken
     t = 0
+    old_t = 0 
 
     def take_environment_step(action):
         """
@@ -104,6 +105,7 @@ def run():
         nonlocal should_break
         nonlocal episode_rewards
         nonlocal t
+        nonlocal old_t
 
         # Check before continuing
         if games_completed >= NUM_GAMES_TO_PLAY:
@@ -144,8 +146,10 @@ def run():
                     "steps" : t,
                     "episodes" : len(episode_rewards),
                     "mean episode reward" : round(np.mean(episode_rewards[-101:-1]), 1),
-                    "reward_for_this_episode" : episode_rewards[-2]
+                    "reward_for_this_episode" : episode_rewards[-2],
+                    "delta_t" : t - old_t
                     })
+                old_t = t
                 datasaver.save_list_of_dicts(game_stats)
 
             return True
