@@ -44,6 +44,7 @@ ENVIRONMENT_ID = 'russell-water-v0'
 VERBOSE = True
 BASELINE_STEPS_FORWARD = 50
 BASELINE_TURNS_TO_NINETY_DEG = 9
+BASELINES_RESTS_PER_PIVOT = 5
 
 
 # =========================
@@ -175,6 +176,16 @@ def run():
                 return shouldRestartPolicyCycle
         return False
 
+    def policy_rest(quantity):
+        """ Rest for |quantity| times
+        """
+        for i in range(quantity):
+            action = {}
+            shouldRestartPolicyCycle = take_environment_step(action)
+            if shouldRestartPolicyCycle:
+                return shouldRestartPolicyCycle
+        return False
+
     """
     LOOP THROUGH OUR BASELINE POLICY, which ignores all observations.
     """
@@ -189,13 +200,23 @@ def run():
         if shouldRestartPolicyCycle:
             continue
         # ==========================
-        # === Hit a wall and pivot ===
+        # Rest before turning to slow velocity
+        shouldRestartPolicyCycle = policy_rest(BASELINES_RESTS_PER_PIVOT)
+        if shouldRestartPolicyCycle:
+            continue
+        # ==========================
+        # === Pivot after hitting the wall ===
         # Then turn counterclockwise by 90 degrees
         shouldRestartPolicyCycle = policy_counterclockwise(BASELINE_TURNS_TO_NINETY_DEG)
         if shouldRestartPolicyCycle:
             continue
         # Then go forward 1 time
         shouldRestartPolicyCycle = policy_forward(1)
+        if shouldRestartPolicyCycle:
+            continue
+        # ==========================
+        # Rest before turning to slow velocity
+        shouldRestartPolicyCycle = policy_rest(BASELINES_RESTS_PER_PIVOT)
         if shouldRestartPolicyCycle:
             continue
         # Then turn counterclockwise by 90 degrees
@@ -209,6 +230,11 @@ def run():
         if shouldRestartPolicyCycle:
             continue
         # ==========================
+        # ==========================
+        # Rest before turning to slow velocity
+        shouldRestartPolicyCycle = policy_rest(BASELINES_RESTS_PER_PIVOT)
+        if shouldRestartPolicyCycle:
+            continue
         # === Pivot again ===
         # Then turn clockwise by 90 degrees
         shouldRestartPolicyCycle = policy_clockwise(BASELINE_TURNS_TO_NINETY_DEG)
@@ -216,6 +242,11 @@ def run():
             continue
         # Then go forward 1 time
         shouldRestartPolicyCycle = policy_forward(1)
+        if shouldRestartPolicyCycle:
+            continue
+        # ==========================
+        # Rest before turning to slow velocity
+        shouldRestartPolicyCycle = policy_rest(BASELINES_RESTS_PER_PIVOT)
         if shouldRestartPolicyCycle:
             continue
         # Then turn clockwise by 90 degrees
