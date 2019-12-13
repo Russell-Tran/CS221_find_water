@@ -4,6 +4,11 @@ Lydia Chan, Russell Tran
 22 November 2019
 
 THIS IS THE SCRIPT THAT IS USED FOR DQN.
+
+For our DQN, we used the OpenAI library, baselines, to
+create the convolutional network and DQN model.
+We used the MineRL provided base code and modified it
+to work for our customized environments and model. 
 """
 
 # ========================
@@ -61,16 +66,14 @@ print('=' * 60)
 # =========================
 register_custom_environment.register(environment_id=ENVIRONMENT_ID, xml_path=MINECRAFT_MISSION_XML_PATH)
 
+
 # Create a q_function ("model") for a DQN algorithm
 model = deepq.models.cnn_to_mlp(
-    # list of convolutional layers in form of
-    # (num_outputs, kernel_size, stride)
+    # list of convolutional layers
     convs=[(32, 8, 4), (64, 4, 2), (64, 3, 1)],
     # list of sizes of hidden layers
     hiddens=[256],
-    # set whether we want this to be a dueling DQN
-    # see https://github.com/openai/baselines/pull/946/commits/933265b01fb6e17a65a052b62aa1f9d592a67e6f
-    dueling=True
+    dueling=False
 )
 
 
@@ -115,20 +118,14 @@ def observation_wrapper(obs):
     return np.concatenate([pov, compass_channel], axis=-1)
 
 if __name__ == '__main__':
-    # Set up a session with at most 8 CPUs used
-    with U.make_session(8):
+    with U.make_session(1):
         # Keep track of data
         datasaver = util.DataSaver(ALGORITHM_NAME, ENVIRONMENT_NAME, OUT_PATH)
 
         # Create the environment
         env = gym.make(ENVIRONMENT_ID)
 
-        # somehow, trying to render it destroys this
-        # env.render()
-
         # Get dimensions of POV observation space
-        # where env.observation_space.spaces =
-        # OrderedDict([('compassAngle', Box()), ('inventory', Dict(dirt:Box())), ('pov', Box(64, 64, 3))])
         # For 'pov', the first two dimensions are x & y coordinates of pixels and the third dimension is
         # for each RGB
         spaces = env.observation_space.spaces['pov']
@@ -136,18 +133,8 @@ if __name__ == '__main__':
         shape[-1] += 1 # effectively change shape (64, 64, 3) --> (64, 64, 4)
 
         # Create all the functions necessary to train the model
-        # https://github.com/openai/baselines/blob/master/baselines/deepq/build_graph.py
-        # Descriptions for the following functions:
-        # act : select an action given observation
-        # train : optimize the error in Bellman's equation
-        # update_target : copy the parameters from the optimized
-        # Q function to the target Q function
-        # debug : a dictionary of functions that print debug data
-        # such as q_values
         act, train, update_target, debug = deepq.build_train(
-            # make_obs_ph is a function that takes a name and
-            # creates a placeholder of input with that name
-            # and BatchInput creates a placeholder for a batch of tensors of a given shape and dtype
+            # BatchInput creates a placeholder for a batch of tensors of a given shape and dtype
             make_obs_ph=lambda name: deepq.utils.BatchInput(shape
                 , name=name),
             q_func=model,

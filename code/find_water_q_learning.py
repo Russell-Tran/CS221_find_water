@@ -39,7 +39,7 @@ import util
 # =========================
 ALGORITHM_NAME = "q_learning"
 # ENVIRONMENT_NAME = "boxed_water_medium"
-ENVIRONMENT_NAME = "sparse_v0"
+ENVIRONMENT_NAME = "dense_v1"
 ENVIRONMENT_PATH = "../environments/"
 OUT_PATH = "../out/"
 NUM_GAMES_TO_PLAY = 500

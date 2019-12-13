@@ -1,4 +1,4 @@
-<!-- THIS IS THE SCRIPT USED TO CREATE THE BASIC ENVIRONMENT. -->
+<!-- THIS IS THE SCRIPT USED TO TEST MAKING A DENSE ENVIRONMENT. -->
 
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -20,13 +20,13 @@
             <AllowSpawning>false</AllowSpawning>
         </ServerInitialConditions>
         <ServerHandlers>
-            <FlatWorldGenerator generatorString="3;1;2;" />
-            <DrawingDecorator>  
-                <DrawCuboid x1="0" y1="0" z1="0" x2="21" y2="15" z2="21" type="stone"/>
-                <DrawCuboid x1="1" y1="1" z1="1" x2="20" y2="15" z2="20" type="air"/>  
-                <DrawCuboid x1="50" y1="1" z1="20" x2="60" y2="10" z2="20" type="water"/>  
+            <FlatWorldGenerator generatorString="3;3,2;1;lake" />
+            <DrawingDecorator> 
+                <DrawCuboid x1="60" y1="1" z1="20" x2="70" y2="1" z2="20" type="water"/>  
+                <DrawCuboid x1="-60" y1="1" z1="20" x2="-70" y2="1" z2="20" type="water"/>  
             </DrawingDecorator>
-            <ServerQuitFromTimeUp timeLimitMs="300000" description="out_of_time"/>
+            <!-- <ServerQuitFromTimeUp timeLimitMs="300000" description="out_of_time"/> -->
+            <ServerQuitFromTimeUp timeLimitMs="6000" description="out_of_time"/>
             <ServerQuitWhenAnyAgentFinishes/>
         </ServerHandlers>
     </ServerSection>
