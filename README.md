@@ -1,4 +1,12 @@
-# CS221_find_water
+# Stanford CS 221: Finding Water in Minecraft
+Lydia Chan, Russell Tran
+13 December 2019
+
+* `code`: Run the training algorithms and simulate Minecraft. To run, call `python3` {`find_water_baseline.py`, `find_water_dqn0.py`, `find_water_q_learning.py`}
+* `environments`: These are the xml files which represent different Minecraft worlds/environments in which the agent can roam. These xml files are parsed by Minecraft Malmo--refer to their documentation for the formatting. The MineRL platform is capable of taking these Minecraft Malmo environments (which Malmo calls "missions") and using them as OpenAI gym environmetns.
+* `out`: Data output on our runs
+* `poster data`: Assets for our poster
+
 #### Below are the necessary dependencies for macOS and Windows:
 
 tensorflow==1.14
