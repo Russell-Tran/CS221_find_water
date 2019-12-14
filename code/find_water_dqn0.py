@@ -42,7 +42,7 @@ import util
 # Define CONFIG CONSTANTS
 # =========================
 ALGORITHM_NAME = "DQN"
-ENVIRONMENT_NAME = "boxed_water_medium"
+ENVIRONMENT_NAME = "dense_v1"
 ENVIRONMENT_PATH = "../environments/"
 OUT_PATH = "../out/"
 NUM_GAMES_TO_PLAY = 500
