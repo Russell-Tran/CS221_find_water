@@ -2,14 +2,15 @@
 [Lydia Chan](https://github.com/LydiaChan528), [Russell Tran](https://github.com/Russell-Tran)  
 13 December 2019  
 
-We use Deep Q-Learning (DQN) to train an agent to search for bodies of water in the video game Minecraft. The agent reads in raw pixel inputs and has the controls of a normal player.
+We use Deep Q-Learning (DQN) to train an agent to search for bodies of water in the video game Minecraft. The agent reads in raw pixel inputs and has the controls of a normal player.   
 
+## Directory 
 * `code`: Run the training algorithms and simulate Minecraft. To run, call `python3` {`find_water_baseline.py`, `find_water_dqn0.py`, `find_water_q_learning.py`}
 * `environments`: These are the xml files which represent different Minecraft worlds/environments in which the agent can roam. These xml files are parsed by Minecraft Malmo--refer to their documentation for the formatting. The MineRL platform is capable of taking these Minecraft Malmo environments (which Malmo calls "missions") and using them as OpenAI gym environmetns.
 * `out`: Data output on our runs
 * `poster data`: Assets for our poster
 
-#### Below are the necessary dependencies for macOS and Windows:
+## Below are the necessary dependencies for macOS and Windows:
 
 tensorflow==1.14
 
